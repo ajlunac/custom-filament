@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\StateResource\Pages;
+use App\Filament\Resources\StateResource\RelationManagers;
 use App\Models\State;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -16,8 +17,8 @@ use Filament\Tables\Table;
 class StateResource extends Resource
 {
     protected static ?string $model = State::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'System Management';
+    protected static ?string $navigationIcon = 'heroicon-o-flag';
 
     public static function form(Form $form): Form
     {
@@ -26,7 +27,9 @@ class StateResource extends Resource
                 // 
                 Select::make('country_id')
                     ->relationship(name: 'country', titleAttribute: 'name'),
-                TextInput::make('name'),
+                TextInput::make('name')
+                ->required()
+                ->maxLength(200),
             ]);
     }
 
@@ -64,6 +67,8 @@ class StateResource extends Resource
     {
         return [
             //
+            RelationManagers\EmployeesRelationManager::class,
+            RelationManagers\CitiesRelationManager::class,
         ];
     }
 

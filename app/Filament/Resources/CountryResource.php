@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CountryResource\Pages;
 use App\Models\Country;
+use App\Filament\Resources\CountryResource\RelationManagers;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,16 +15,20 @@ use Filament\Tables\Table;
 class CountryResource extends Resource
 {
     protected static ?string $model = Country::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'System Management';
+    protected static ?string $navigationIcon = 'heroicon-o-map';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 //
-                TextInput::make('country_code'),
-                TextInput::make('name'),
+                TextInput::make('country_code')
+                ->required()
+                ->maxLength(3),
+                TextInput::make('name')
+                ->required()
+                ->maxLength(200),
             ]);
     }
 
@@ -61,6 +66,9 @@ class CountryResource extends Resource
     {
         return [
             //
+            RelationManagers\EmployeesRelationManager::class,
+            RelationManagers\StatesRelationManager::class,
+            
         ];
     }
 

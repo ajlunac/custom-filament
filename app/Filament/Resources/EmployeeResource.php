@@ -3,9 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmployeeResource\Pages;
-use App\Filament\Resources\EmployeeResource\RelationManagers;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\Employee;
-use Filament\Forms;
+use App\Models\State;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -15,14 +16,13 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 
 class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
 
     public static function form(Form $form): Form
     {
@@ -30,27 +30,55 @@ class EmployeeResource extends Resource
             ->schema([
                 //
                 Select::make('country_id')
-                    ->relationship(name: 'country', titleAttribute: 'name')
-                    ->required(),
+                    ->label('Country')
+                    ->options(Country::all()->pluck('name', 'id')->toArray())
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('state_id', null)),
+
                 Select::make('state_id')
-                    ->relationship(name: 'state', titleAttribute: 'name')
-                    ->required(),
+                    ->label('State')
+                    ->required()
+                    ->options( function (callable $get){
+                        $country = Country::find($get('country_id'));
+                        if(!$country){
+                            return State::all()->pluck('name', 'id');
+                        }
+                        return $country->states->pluck('name', 'id');
+                    })
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('city_id', null)),
+
                 Select::make('city_id')
-                    ->relationship(name: 'city', titleAttribute: 'name')
-                    ->required(),
+                    ->label('City')
+                    ->options( function (callable $get){
+                        $state = State::find($get('state_id'));
+                        if(!$state){
+                            return City::all()->pluck('name', 'id');
+                        }
+                        return $state->cities->pluck('name', 'id');
+                    })
+                    ->required()
+                    ->reactive(),
+
                 Select::make('department_id')
                     ->relationship(name: 'department', titleAttribute: 'name')
                     ->required(),
                 TextInput::make('first_name')
-                    ->required(),
+                    ->required()
+                    ->maxLength(200),
                 TextInput::make('last_name')
-                    ->required(),
+                    ->required()
+                    ->maxLength(200),
                 TextInput::make('address')
-                    ->required(),
+                    ->required()
+                    ->maxLength(200),
                 TextInput::make('phone_number')
-                    ->required(),
+                    ->required()
+                    ->maxLength(20),
                 TextInput::make('zip_code')
-                    ->required(),
+                    ->required()
+                    ->maxLength(10),
                 DatePicker::make('birth_date')
                     ->required(),
                 DatePicker::make('date_hired')
@@ -110,6 +138,7 @@ class EmployeeResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()
                 ]),
             ]);
     }
