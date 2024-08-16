@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmployeeResource\Pages;
+use App\Filament\Resources\EmployeeResource\Widgets\EmployeeStatsOverview;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Employee;
@@ -21,7 +22,7 @@ use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
-
+    protected static ?string $navigationLabel = 'Empleados';
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
 
     public static function form(Form $form): Form
@@ -94,38 +95,54 @@ class EmployeeResource extends Resource
                 TextColumn::make('id')
                     ->sortable(),
                 TextColumn::make('first_name')
+                    ->label('Nombre')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('last_name')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('phone_number')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault : true),
                 TextColumn::make('zip_code')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault : true),
                 TextColumn::make('country.name')
+                    ->sortable()
                     ->searchable()
-                    ->sortable(),
+                    ->toggleable(),
                 TextColumn::make('state.name')
+                    ->sortable()
                     ->searchable()
-                    ->sortable(),
+                    ->toggleable(),
                 TextColumn::make('city.name')
+                    ->sortable()
                     ->searchable()
-                    ->sortable(),
+                    ->toggleable(),
                 TextColumn::make('department.name')
+                    ->sortable()
                     ->searchable()
-                    ->sortable(),
+                    ->toggleable(),
                 TextColumn::make('birth_date')
                     ->sortable()
-                    ->date(),
+                    ->date()
+                    ->toggleable(isToggledHiddenByDefault : true),
                 TextColumn::make('date_hired')
                     ->sortable()
-                    ->date(),
+                    ->date()
+                    ->toggleable(isToggledHiddenByDefault : true),
                 TextColumn::make('created_at')
                     ->sortable()
-                    ->dateTime(),
+                    ->dateTime()
+                    ->toggleable(),
+                TextColumn::make('updated_at')
+                    ->sortable()
+                    ->dateTime()
+                    ->toggleable(isToggledHiddenByDefault : true),
             ])
             ->filters([
                 //
@@ -147,6 +164,13 @@ class EmployeeResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            EmployeeStatsOverview::class,
         ];
     }
 
